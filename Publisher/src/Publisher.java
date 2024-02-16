@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -11,35 +11,50 @@ public class Publisher {
 
     public static void main(String[] args) {
         try {
-            ServerSocket serverSocket = new ServerSocket(9999);
-            System.out.println("Publisher started. Waiting for consumers");
+            Thread messageThread = new Thread(() -> {
+                OutputStream outputStream;
+                Scanner scanner = new Scanner(System.in);
 
-            while (true) {
-                Socket socket = serverSocket.accept();
-                System.out.println("Connected to consumer");
-                consumers.offer(socket);
-
-                Thread messageThread = new Thread(() -> {
-                    try {
-                        OutputStream outputStream;
-                        Scanner scanner = new Scanner(System.in);
-
+                System.out.println("Waiting for customers");
+                while (true) {
+                    if(!consumers.isEmpty()) {
                         System.out.print("Enter message to publish: ");
                         String message = scanner.nextLine();
 
                         for (Socket consumerSocket : consumers) {
-                            outputStream = consumerSocket.getOutputStream();
-                            outputStream.write(message.getBytes());
-                            outputStream.flush();
+                            try {
+                                outputStream = consumerSocket.getOutputStream();
+                                outputStream.write(message.getBytes());
+                                outputStream.flush();
+                            } catch (IOException e) {
+                                System.err.println("Consumer disconnected");
+                                consumers.remove(consumerSocket);
+                            }
                         }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
-                });
-                messageThread.start();
+                }
+
+            });
+            messageThread.start();
+
+            List<Integer> customersPorts = List.of(9996, 9997, 9998, 9999);
+
+            while (true) {
+                for (Integer port : customersPorts) {
+                    boolean existPort = consumers.stream().anyMatch(e -> e.getPort() == port);
+                    try {
+                        if(!existPort){
+                            Socket socket = new Socket("localhost", port);
+                            System.out.println("Connected to consumer on port " + port);
+                            consumers.offer(socket);
+                        }
+                    } catch (IOException e) {
+                        Thread.sleep(1000);
+                    }
+                }
             }
-        } catch (IOException e) {
+
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

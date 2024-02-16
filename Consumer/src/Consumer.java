@@ -1,21 +1,22 @@
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Consumer {
+
     public static void main(String[] args) {
         try {
-            Socket socket = new Socket("localhost", 9998);
-            System.out.println("Connected to publisher.");
+            ServerSocket serverSocket = new ServerSocket(9998);
+            System.out.println("Consumer started. Waiting for publishers");
 
-            InputStream inputStream = socket.getInputStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead = inputStream.read(buffer);
+            while (true) {
+                Socket socket = serverSocket.accept();
+                System.out.println("Connected to publisher");
 
-            String message = new String(buffer, 0, bytesRead);
-            System.out.println("Received: " + message);
+                Thread publisherThread = new Thread(new PublisherHandler(socket));
+                publisherThread.start();
+            }
 
-            socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
