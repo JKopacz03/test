@@ -44,9 +44,10 @@ public class Doctor {
         }
     }
 
-    public static Optional<Doctor> findById(int id) {
+    public static Doctor findById(int id) {
         return doctors.stream().filter(l -> l.getDoctorId() == id)
-                .findFirst();
+                .findFirst()
+                .get();
     }
 
     public static List<Doctor> get5OldestDoctors() {

@@ -3,6 +3,7 @@ package plik;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -14,13 +15,17 @@ public class Main {
 
         Map<String, Integer> countMap = new HashMap<>();
 
-        String regex = "(?<!\\/\\/.*)(?<!\\/\\*.*)(String|int|boolean|byte|short|long|float|double|char)\\s+(\\w+)\\s*=\\s*(\"(?:\\\\\"|[^\"])*\"|'(?:\\\\'|[^'])*'|[^;]+?);";
+        String regex = "((?:\\/\\*(?:.|[\\n\\r])*?\\*\\/)|(\\/\\*[\\s\\S]*$))|(?<!\\/\\/.*)(?s)(String|int|boolean|byte|short|long|float|double|char)\\s+(\\w+)\\s*=\\s*(\"(?:\\\\\"|[^\"])*\"|'(?:\\\\'|[^'])*'|[^;]+?);";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(file);
 
+
         while (matcher.find()) {
-            String type = matcher.group(1);
-            countMap.put(type, countMap.getOrDefault(type, 0) + 1);
+            String match = matcher.group();
+            if (!match.startsWith("/*") && !match.endsWith("*/")) {
+                String[] strings = match.split("\s");
+                countMap.put(strings[0], countMap.getOrDefault(strings[0], 0) + 1);
+            }
         }
 
         countMap.entrySet().forEach(

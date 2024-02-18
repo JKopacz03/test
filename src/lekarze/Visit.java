@@ -12,12 +12,10 @@ public class Visit {
     private LocalDate visitDate;
 
     public Visit(String doctorId, String patientId, LocalDate visitDate) {
-        Optional<Doctor> optionalDoctor = Doctor.findById(Integer.parseInt(doctorId));
-        Optional<Patient> optionalPatient = Patient.findById(Integer.parseInt(patientId));
+        Doctor doctor = Doctor.findById(Integer.parseInt(doctorId));
+        Patient patient = Patient.findById(Integer.parseInt(patientId));
 
-        if (optionalDoctor.isPresent() && optionalPatient.isPresent()) {
-            Doctor doctor = optionalDoctor.get();
-            Patient patient = optionalPatient.get();
+        if (doctor != null && patient != null) {
 
             this.doctor = doctor;
             this.patient = patient;

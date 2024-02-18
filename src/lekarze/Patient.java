@@ -37,9 +37,10 @@ public class Patient {
         }
     }
 
-    public static Optional<Patient> findById(int id){
+    public static Patient findById(int id){
         return patients.stream().filter(p -> p.getPatientId() == id)
-                .findFirst();
+                .findFirst()
+                .get();
     }
 
     public static Patient patientWithMostVisits(){
