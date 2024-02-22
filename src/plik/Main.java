@@ -15,14 +15,19 @@ public class Main {
 
         Map<String, Integer> countMap = new HashMap<>();
 
-        String regex = "((?:\\/\\*(?:.|[\\n\\r])*?\\*\\/)|(\\/\\*[\\s\\S]*$))|(?<!\\/\\/.*)(?s)(String|int|boolean|byte|short|long|float|double|char)\\s+(\\w+)\\s*=\\s*(\"(?:\\\\\"|[^\"])*\"|'(?:\\\\'|[^'])*'|[^;]+?);";
+        String file2 = file.replaceAll("((?:\\/\\*(?:.|[\\n\\r])*?\\*\\/)|(\\/\\*[\\s\\S]*$))", "");
+        String[] lines = file2.split("\n");
+
+        String regex =
+                "(?<!\"{1})(?<!\".*\".*\".*)(?<!\".*\".*\".*\".*\".*)(?<!\".*\".*\".*\".*\".*\".*\".*)" +
+                        "(?<!\\/\\/.*)(String|int|boolean|byte|short|long|float|double|char)\\s+(\\w+)\\s*=\\s*(\"(?:\\\\\"|[^\"])*\"|'(?:\\\\'|[^'])*'|[^;]+?)(;|\s*\\+)";
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(file);
+        for (String s: lines) {
 
-
-        while (matcher.find()) {
-            String match = matcher.group();
-            if (!match.startsWith("/*") && !match.endsWith("*/")) {
+            Matcher matcher = pattern.matcher(s);
+            while (matcher.find()) {
+                String match = matcher.group();
+                System.out.println(match);
                 String[] strings = match.split("\s");
                 countMap.put(strings[0], countMap.getOrDefault(strings[0], 0) + 1);
             }
