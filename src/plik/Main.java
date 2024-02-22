@@ -3,7 +3,6 @@ package plik;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -27,7 +26,6 @@ public class Main {
             Matcher matcher = pattern.matcher(s);
             while (matcher.find()) {
                 String match = matcher.group();
-                System.out.println(match);
                 String[] strings = match.split("\s");
                 countMap.put(strings[0], countMap.getOrDefault(strings[0], 0) + 1);
             }
