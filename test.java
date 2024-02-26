@@ -5,7 +5,7 @@ public class Main {
                 "int i = 5;" +
                 " ttfyhthrrh11112--7878";
         String xd = " + int e = 0; + ";
-
+        String ee = " String i = "e";";
 //        String name2 = "Ale ma kot int i = 0; tak";
 
 //        String e1 = "d"; int iw = 0; String e2 = "x";
@@ -19,9 +19,13 @@ public class Main {
             int i = 1;
             String name = "xd";
          */
-        String namet = "xd";
-        /** int xd = 1; */
+        String in = 'int e = 0';
+        /**
+         *int xd = 1;
+         */
         int it = 0;
+
+
         /*
         int e = 0;
         String mentzenKrol = "pis i po jedno zlo";
