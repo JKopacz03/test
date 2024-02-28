@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 public class Server {
     public static void main(String[] args) throws IOException {
@@ -24,18 +23,44 @@ public class Server {
                     System.out.println("Publisher connected from port: " + socket.getPort());
                     new Thread(() -> {
                         try {
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                            String receivedMess;
-                            while ((receivedMess = reader.readLine()) != null) {
-                                Socket newe = consumers.take();
-                                consumers.offer(newe);
-                                for (Socket consumerSocket : consumers) {
-                                    if (consumerSocket.isConnected()) {
+                            while (true) {
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                                String receivedMess;
+                                StringBuilder accumulatedMessages = new StringBuilder();
+                                while ((receivedMess = reader.readLine()) != null) {
+                                    if (consumers.isEmpty()) {
+                                        Socket consumerSocket = consumers.take();
+                                        consumers.offer(consumerSocket);
+                                        accumulatedMessages.append(receivedMess + "\n");
+                                        while (reader.ready() && (receivedMess = reader.readLine()) != null) {
+                                            accumulatedMessages.append(receivedMess).append("\n");
+                                        }
                                         PrintWriter out = outputMap.get(consumerSocket);
-                                        out.println(receivedMess);
+                                        out.println(accumulatedMessages);
+                                        accumulatedMessages.setLength(0);
+                                        break;
                                     } else {
-                                        consumers.remove(consumerSocket);
-                                        outputMap.remove(consumerSocket);
+                                        for (Socket consumerSocket : consumers) {
+                                            PrintWriter out = outputMap.get(consumerSocket);
+                                            out.println("PING");
+                                            consumerSocket.setSoTimeout(1000);
+                                            try {
+                                                BufferedReader responseReader = new BufferedReader(new InputStreamReader(consumerSocket.getInputStream()));
+                                                String response = responseReader.readLine();
+                                                if (response != null && response.equals("PONG")) {
+                                                    out.println(receivedMess);
+                                                } else {
+                                                    consumers.remove(consumerSocket);
+                                                    outputMap.remove(consumerSocket);
+                                                    accumulatedMessages.append(receivedMess + "\n");
+                                                }
+                                            }
+                                            catch (IOException e) {
+                                                consumers.remove(consumerSocket);
+                                                outputMap.remove(consumerSocket);
+                                                accumulatedMessages.append(receivedMess + "\n");
+                                            }
+                                        }
                                     }
                                 }
                             }

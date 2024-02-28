@@ -12,7 +12,9 @@ public class Consumer {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             while (true) {
                 String message = in.readLine();
-                if (message != null) {
+                if (message != null && message.equals("PING")) {
+                    out.println("PONG");
+                } else {
                     System.out.println(message);
                 }
             }
